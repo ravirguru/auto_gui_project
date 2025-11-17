@@ -45,4 +45,4 @@ jobs:
           path: report.html
 
       - name: Run tests
-        run: pytest -v --maxfail=1 --disable warnings
+        run: pytest -v --maxfail=1 --disable-warnings
