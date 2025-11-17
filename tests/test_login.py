@@ -30,8 +30,9 @@ def test_login_page(setup_teardown):
     logger.info("Login test completed successfully")
     expected_title = "Swag Labs"
     actual_title = login_page.get_page_title()
-    assert actual_title == expected_title, f"Expected title to be {expected_title} but got {actual_title
-    }"
+    assert actual_title == expected_title, f"Expected title to be {expected_title} but got {actual_title}"
+
+
 
 @pytest.mark.regression
 def test_invalid_user(setup_teardown):
