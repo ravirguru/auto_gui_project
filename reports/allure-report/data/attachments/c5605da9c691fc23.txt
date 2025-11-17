@@ -1,0 +1,7 @@
+2025-10-31 16:42:31,075 - [INFO] - auto_gui_project.tests.test_login - Starting test: test valid login user
+2025-10-31 16:42:31,710 - [INFO] - auto_gui_project.tests.test_login - Navigated to Login page
+2025-10-31 16:42:31,948 - [INFO] - auto_gui_project.tests.test_login - Entering username in text field
+2025-10-31 16:42:34,126 - [INFO] - auto_gui_project.tests.test_login - Entered password in text field
+2025-10-31 16:42:34,293 - [INFO] - pages.login_page - Clicked on login button successfully
+2025-10-31 16:42:34,294 - [INFO] - auto_gui_project.tests.test_login - Clicked login button successfully
+2025-10-31 16:42:34,294 - [INFO] - auto_gui_project.tests.test_login - Login test completed successfully

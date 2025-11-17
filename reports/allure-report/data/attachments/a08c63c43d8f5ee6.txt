@@ -1,0 +1,7 @@
+[32mINFO    [0m auto_gui_project.tests.test_login:test_login.py:10 Starting test: test valid login user
+[32mINFO    [0m auto_gui_project.tests.test_login:test_login.py:15 Navigated to Login page
+[32mINFO    [0m auto_gui_project.tests.test_login:test_login.py:20 Entering username in text field
+[32mINFO    [0m auto_gui_project.tests.test_login:test_login.py:25 Entered password in text field
+[32mINFO    [0m pages.login_page:login_page.py:55 Clicked on login button successfully
+[32mINFO    [0m auto_gui_project.tests.test_login:test_login.py:27 Clicked login button successfully
+[32mINFO    [0m auto_gui_project.tests.test_login:test_login.py:28 Login test completed successfully

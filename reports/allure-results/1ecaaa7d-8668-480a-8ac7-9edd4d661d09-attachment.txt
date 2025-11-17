@@ -1,0 +1,1 @@
+2025-11-10 23:27:56,151 - [INFO] - auto_gui_project.tests.test_login - Starting test for empty user name and password

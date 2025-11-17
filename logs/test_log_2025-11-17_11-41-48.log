@@ -1,0 +1,8 @@
+2025-11-17 11:41:56,010 - [INFO] - auto_gui_project.tests.test_login - Starting test: test valid login user
+2025-11-17 11:41:56,720 - [INFO] - auto_gui_project.tests.test_login - Navigated to Login page
+2025-11-17 11:41:56,820 - [INFO] - auto_gui_project.tests.test_login - Entering username in text field
+2025-11-17 11:41:58,861 - [INFO] - auto_gui_project.tests.test_login - Entered password in text field
+2025-11-17 11:41:58,996 - [INFO] - auto_gui_project.tests.test_login - Clicked login button successfully
+2025-11-17 11:41:58,997 - [INFO] - auto_gui_project.tests.test_login - Login test completed successfully
+2025-11-17 11:42:09,309 - [INFO] - auto_gui_project.tests.test_login - starting test for invalid user login
+2025-11-17 11:42:20,359 - [INFO] - auto_gui_project.tests.test_login - Starting test for empty user name and password

@@ -1,0 +1,1 @@
+[32mINFO    [0m auto_gui_project.tests.test_login:test_login.py:52 Starting test for empty user name and password
