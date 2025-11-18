@@ -3,15 +3,16 @@ pipeline {
 
     stages {
         stage('Install Python') {
-            steps {
-                sh '''
-                    sudo apt-get update
-                    sudo apt-get install -y python3 python3-pip
-                    python3 --version
-                    pip3 --version
-                '''
-            }
+                steps {
+                      sh '''
+                      apt-get update
+                      apt-get install -y python3 python3-pip
+                      python3 --version
+                      pip3 --version
+                      '''
         }
+    }
+
 
         stage('Checkout') {
             steps {
