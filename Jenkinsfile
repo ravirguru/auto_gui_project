@@ -4,34 +4,26 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                git branch: 'main', url: 'https://github.com/ravirguru/auto_gui_project.git'
             }
         }
 
-        stage('Install Python + Dependencies') {
+        stage('Install dependencies') {
             steps {
-                sh 'python3 --version'
-                sh 'python3 -m venv venv'
-                sh '. venv/bin/activate && pip install -r requirements.txt'
+                sh 'pip install -r requirements.txt'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh '. venv/bin/activate && pytest -v --disable-warnings --maxfail=1 --html=report.html'
-            }
-        }
-
-        stage('Archive Reports') {
-            steps {
-                archiveArtifacts artifacts: 'report.html', fingerprint: true
+                sh 'pytest -v --junitxml=report.xml'
             }
         }
     }
 
     post {
         always {
-            junit 'reports/*.xml'
+            junit 'report.xml'
         }
     }
 }
