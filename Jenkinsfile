@@ -16,7 +16,9 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                sh 'pytest -v --junitxml=reports/junit-report.xml'
+                sh 'pytest -v --junitxml=reports/junit-report.xml || true'
+                sh 'echo "--- LIST WORKSPACE FILES ---"'
+                sh 'ls -R .'
             }
         }
     }
