@@ -16,14 +16,14 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                sh 'pytest -v --junitxml=report.xml'
+                sh 'pytest -v --junitxml=reports/junit-report.xml'
             }
         }
     }
 
     post {
         always {
-            junit 'report.xml'
+            junit 'reports/junit-report.xml'
         }
     }
 }
