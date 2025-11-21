@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.10'
-            args '-u root'  // runs container commands as root
-        }
-    }
+    agent any
 
     stages {
         stage('Checkout') {
@@ -13,28 +8,40 @@ pipeline {
             }
         }
 
-        stage('Install dependencies') {
+        stage('Run Tests - Chrome') {
             steps {
-                sh 'pip install -r requirements.txt'
+                sh '''
+                    docker run --rm \
+                        -v $WORKSPACE:/project \
+                        -w /project \
+                        selenium/standalone-chrome:latest \
+                        bash -c "pip install -r requirements.txt && pytest -v --junitxml=reports/junit-chrome.xml || true"
+                '''
             }
         }
 
-        stage('Run Tests') {
+        stage('Run Tests - Firefox') {
             steps {
-                sh 'pytest -v --junitxml=reports/junit-report.xml'
+                sh '''
+                    docker run --rm \
+                        -v $WORKSPACE:/project \
+                        -w /project \
+                        selenium/standalone-firefox:latest \
+                        bash -c "pip install -r requirements.txt && pytest -v --junitxml=reports/junit-firefox.xml || true"
+                '''
             }
         }
 
-        stage('List Files') {
+        stage('List Reports') {
             steps {
-                sh 'ls -R .'
+                sh 'ls -R reports'
             }
         }
     }
 
     post {
         always {
-            junit 'reports/junit-report.xml'
+            junit 'reports/*.xml'
         }
     }
 }
