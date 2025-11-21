@@ -1,24 +1,27 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'python:3.10'
+            args '-u root'  // runs container commands as root
+        }
+    }
 
     stages {
-        stage('Pull Python Image') {
+        stage('Checkout') {
             steps {
-                sh 'docker pull python:3.10'
+                git branch: 'main', url: 'https://github.com/ravirguru/auto_gui_project.git'
             }
         }
 
-        stage('Run Tests in Docker') {
+        stage('Install dependencies') {
             steps {
-                sh '''
-                    mkdir -p reports
+                sh 'pip install -r requirements.txt'
+            }
+        }
 
-                    docker run --rm \
-                    -v $WORKSPACE:/project \
-                    -w /project \
-                    python:3.10 \
-                    bash -c "pip install -r requirements.txt && pytest -v --junitxml=reports/junit-report.xml || true"
-                '''
+        stage('Run Tests') {
+            steps {
+                sh 'pytest -v --junitxml=reports/junit-report.xml'
             }
         }
 
