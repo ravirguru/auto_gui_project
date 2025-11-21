@@ -104,3 +104,13 @@ print(d)
 
 res = sorted(d.items(), key= lambda item: item[-1])
 print(res)
+
+def count_items_in_list(li: list) -> dict:
+    d = {}
+    for item in li:
+        d[item] = d.get(item,0) + 1
+    return  d
+sorted_item = sorted(d, key=lambda x: x[-1])
+print(sorted_item)
+
+print(count_items_in_list(['a','b','a','c','a','e','b']))
