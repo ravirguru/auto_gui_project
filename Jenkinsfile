@@ -1,27 +1,28 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.10'
-            args '-u root'
-        }
-    }
+    agent any
 
     stages {
-        stage('Checkout') {
+
+        stage('Pull Python Image') {
             steps {
-                git branch: 'main', url: 'https://github.com/ravirguru/auto_gui_project.git'
+                sh 'docker pull python:3.10'
             }
         }
 
-        stage('Install dependencies') {
+        stage('Run Tests in Docker') {
             steps {
-                sh 'pip3 install -r requirements.txt'
+                sh '''
+                    docker run --rm \
+                        -v $PWD:/project \
+                        -w /project \
+                        python:3.10 \
+                        bash -c "pip install -r requirements.txt && pytest -v --junitxml=reports/junit-report.xml || true"
+                '''
             }
         }
 
-        stage('Run Tests') {
+        stage('List Files') {
             steps {
-                sh 'pytest -v --junitxml=reports/junit-report.xml || true'
                 sh 'ls -R .'
             }
         }
@@ -29,7 +30,7 @@ pipeline {
 
     post {
         always {
-            junit '**reports/junit-report.xml'
+            junit 'reports/junit-report.xml'
         }
     }
 }
