@@ -11,15 +11,16 @@ pipeline {
 
         stage('Run Tests in Docker') {
             steps {
-                sh '''
-                    docker run --rm \
-                        -v $PWD:/project \
+                    sh """
+                        docker run --rm \
+                        -v ${WORKSPACE}:/project \
                         -w /project \
                         python:3.10 \
                         bash -c "pip install -r requirements.txt && pytest -v --junitxml=reports/junit-report.xml || true"
-                '''
-            }
+                    """
         }
+    }
+
 
         stage('List Files') {
             steps {
