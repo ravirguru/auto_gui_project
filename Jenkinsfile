@@ -45,18 +45,15 @@ pipeline {
         stage('Run Tests - Chrome') {
             steps {
                 sh """
-                    echo WORKSPACE = ${WORKSPACE}
-                    ls -R ${WORKSPACE}
+                        docker run --rm \
+                          -e RUN_ENV=jenkins \
+                          -e GRID_URL=http://host.docker.internal:4444/wd/hub \
+                          -v ${WORKSPACE}:/project \
+                          -w /project \
+                          python:3.10 \
+                          bash -c "ls -la && pip install -r requirements.txt && pytest -v --browser chrome --junitxml=reports/junit-chrome.xml"
+                   """
 
-                    docker run --rm \
-                        -e RUN_ENV=jenkins \
-                        -e GRID_URL=http://host.docker.internal:4444/wd/hub \
-                        -v ${WORKSPACE}:/project \
-                        -w /project \
-                        python:3.10 \
-                        bash -c "pip install -r requirements.txt && pytest -v --browser chrome --junitxml=reports/junit-chrome.xml || true"
-
-                """
             }
         }
 
