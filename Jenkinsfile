@@ -25,27 +25,26 @@ pipeline {
             }
         }
 
-       stage('Run Tests - Chrome') {
+        stage('Run Tests - Chrome') {
             steps {
-                sh '''
-                    echo "WORKSPACE = $WORKSPACE"
+                sh """
+                    echo WORKSPACE = ${WORKSPACE}
+                    ls -R ${WORKSPACE}
 
                     docker run --rm \
-                    -e RUN_ENV=jenkins \
-                    -e GRID_URL=http://host.docker.internal:4444/wd/hub \
-                    -v $WORKSPACE:/project \
-                    -w /project \
-                    python:3.10 \
-                    bash -c "pip install -r requirements.txt && pytest -v --browser chrome --junitxml=reports/junit-chrome.xml || true"
-                '''
+                        -e RUN_ENV=jenkins \
+                        -e GRID_URL=http://host.docker.internal:4444/wd/hub \
+                        -v ${WORKSPACE}:/project \
+                        -w /project \
+                        python:3.10 \
+                        bash -c "pip install -r requirements.txt && pytest -v --browser chrome --junitxml=reports/junit-chrome.xml || true"
+                """
             }
-       }
-
+        }
 
         stage('Stop Chrome') {
             steps { sh "docker rm -f selenium-chrome || true" }
         }
-
 
         /* ---------------- Firefox ---------------- */
         stage('Start Firefox Selenium') {
@@ -60,16 +59,18 @@ pipeline {
 
         stage('Run Tests - Firefox') {
             steps {
-                sh '''
-                docker run --rm \
-                    -e RUN_ENV=jenkins \
-                    -e GRID_URL=http://host.docker.internal:4445/wd/hub \
-                    -v $WORKSPACE:/project \
-                    -w /project \
-                    python:3.10 \
-                    bash -c "pip install -r requirements.txt && pytest -v --browser firefox --junitxml=reports/junit-firefox.xml || true"
-                '''
+                sh """
+                    echo WORKSPACE = ${WORKSPACE}
+                    ls -R ${WORKSPACE}
 
+                    docker run --rm \
+                        -e RUN_ENV=jenkins \
+                        -e GRID_URL=http://host.docker.internal:4445/wd/hub \
+                        -v ${WORKSPACE}:/project \
+                        -w /project \
+                        python:3.10 \
+                        bash -c "pip install -r requirements.txt && pytest -v --browser firefox --junitxml=reports/junit-firefox.xml || true"
+                """
             }
         }
 
