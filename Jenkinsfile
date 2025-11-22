@@ -10,9 +10,13 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/ravirguru/auto_gui_project.git'
+                    dir("${env.WORKSPACE}") {
+                    deleteDir()
+                    git branch: 'main', url: 'https://github.com/ravirguru/auto_gui_project.git'
             }
-        }
+         }
+    }
+
         stage('Debug Workspace') {
             steps {
                     sh '''
