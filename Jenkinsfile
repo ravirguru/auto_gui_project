@@ -13,6 +13,23 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/ravirguru/auto_gui_project.git'
             }
         }
+        stage('Debug Workspace') {
+            steps {
+                    sh '''
+                        echo "=== CURRENT WORKING DIRECTORY (pwd) ==="
+                        pwd
+
+                        echo "=== LISTING FILES IN CURRENT DIRECTORY ==="
+                        ls -la
+
+                        echo "=== LISTING FULL PATH OF WORKSPACE (if exists) ==="
+                        ls -la $WORKSPACE || true
+
+                        echo "=== PRINT ENVIRONMENT VARIABLES ==="
+                        env
+                    '''
+            }
+        }
 
         /* ---------------- Chrome ---------------- */
         stage('Start Chrome Selenium') {
