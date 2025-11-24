@@ -1,48 +1,48 @@
-name: UI Automation CI
+name: Python Selenium Tests (Chrome + Firefox)
 
 on:
   push:
-    branches: [main]
+    branches: ["main"]
   pull_request:
-    branches: [main]
-
 
 jobs:
-  test:
+  selenium-tests:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        browser: [chrome, firefox]  # Run tests twice, one per browser
+
+    services:
+      selenium:
+        image: selenium/standalone-${{ matrix.browser }}:latest
+        ports:
+          - 4444:4444
+        options: >-
+          --shm-size=2g
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: 3.10
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
           pip install -r requirements.txt
-           pip install selenium pytest pytest-html webdriver-manager
 
-      - name: Install Chrome
+      - name: Run Pytest (with Allure)
+        env:
+          GRID_URL: "http://localhost:4444/wd/hub"
+          BROWSER: ${{ matrix.browser }}
         run: |
-          sudo apt update
-          sudo apt install -y google-chrome-stable
+          pytest --alluredir=allure-results
 
-      - name: Install ChromeDriver
-        uses: nanasess/setup-chromedriver@v2
-
-      - name: Run PyTests (Headless)
-        run: |
-          pytest --html=report.html --self-contained-html
-
-      - name: Upload Test Report
-        uses: actions/upload-artifact@v4
+      - name: Upload Allure Results
+        uses: actions/upload-artifact@v3
         with:
-          name: pytest-report
-          path: report.html
-
-      - name: Run tests
-        run: pytest -v --maxfail=1 --disable-warnings
+          name: allure-results-${{ matrix.browser }}
+          path: allure-results
