@@ -1,39 +1,26 @@
-name: Python Selenium Tests
+services:
+  selenium:
+    image: selenium/standalone-chrome-firefox:4.21.0-20240604
+    ports:
+      - 4444:4444
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
+env:
+  GRID_URL: "http://localhost:4444/wd/hub"
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
+steps:
+  - uses: actions/checkout@v4
 
-    services:
-      selenium:
-        image: selenium/standalone-browsers:4.21.0-20240604
-        ports:
-          - 4444:4444
-        options: >-
-          --shm-size="2g"
+  - name: Set up Python
+    uses: actions/setup-python@v5
+    with:
+      python-version: "3.10"
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  - name: Install Dependencies
+    run: |
+      pip install -r requirements.txt
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+  - name: Run Tests (Chrome)
+    run: pytest -vs --browser=chrome
 
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-
-      - name: Run tests on Chrome
-        run: |
-          pytest -vs --browser=chrome
-
-      - name: Run tests on Firefox
-        run: |
-          pytest -vs --browser=firefox
+  - name: Run Tests (Firefox)
+    run: pytest -vs --browser=firefox
