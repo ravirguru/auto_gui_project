@@ -8,9 +8,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        browser: [chrome, firefox]
+
     services:
       selenium:
-        image: selenium/standalone-chrome-firefox:4.21.0-20240604
+        image: selenium/standalone-${{ matrix.browser }}:4.21.0
         ports:
           - 4444:4444
 
@@ -18,20 +22,15 @@ jobs:
       GRID_URL: "http://localhost:4444/wd/hub"
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: |
           pip install -r requirements.txt
 
-      - name: Run Chrome tests
-        run: pytest -vs --browser=chrome
-
-      - name: Run Firefox tests
-        run: pytest -vs --browser=firefox
+      - name: Run Tests
+        run: pytest -vs --browser=${{ matrix.browser }}
