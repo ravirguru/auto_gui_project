@@ -6,3 +6,5 @@ def test_sample_name(sample_data):
 def test_sample_age(sample_data):
     assert sample_data['age'] == 30
 
+def test_sample_salary(sample_data):
+    assert sample_data['salary'] == 500

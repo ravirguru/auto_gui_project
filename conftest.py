@@ -43,7 +43,7 @@ def pytest_runtest_makereport(item,call):
 @pytest.fixture()
 def sample_data():
     print("\n Setting up fixture for sample data")
-    data = {"name" : "Alice", "age" : 30}
+    data = {"name" : "Alice", "age" : 30, "Salary" : 500}
     yield  data
     print("tearing down the fixture")
 
