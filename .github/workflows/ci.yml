@@ -1,48 +1,39 @@
-name: Python Selenium Tests (Chrome + Firefox)
+name: Python Selenium Tests
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
   pull_request:
 
 jobs:
-  selenium-tests:
+  test:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        browser: [chrome, firefox]  # Run tests twice, one per browser
 
     services:
       selenium:
-        image: selenium/standalone-${{ matrix.browser }}:latest
+        image: selenium/standalone-browsers:4.21.0-20240604
         ports:
           - 4444:4444
         options: >-
-          --shm-size=3g
+          --shm-size="2g"
 
     steps:
-      - name: Checkout Code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
 
-      - name: Run Pytest (with Allure)
-        env:
-          GRID_URL: "http://localhost:4444/wd/hub"
-          BROWSER: ${{ matrix.browser }}
+      - name: Run tests on Chrome
         run: |
-          pytest --alluredir=allure-results
+          pytest -vs --browser=chrome
 
-      - name: Upload Allure Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-results-${{ matrix.browser }}
-          path: allure-results
+      - name: Run tests on Firefox
+        run: |
+          pytest -vs --browser=firefox
