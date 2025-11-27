@@ -14,7 +14,7 @@ def test_sample_salary(sample_data):
 def test_validate_testdata(resource):
     assert resource["data"] == 123
 
-#parameterizing data here.
+#parameterizing data here. We need to pass "username,password" as one string here else it will fail.
 @pytest.mark.parametrize("username,password",
                          [("admin", "admin123"),
                              ("user1", "pass1"),
