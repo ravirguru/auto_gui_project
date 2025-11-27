@@ -88,19 +88,21 @@ pipeline {
             }
         }
 
-        /* ===================== FIREFOX WITH VNC + VIDEO ===================== */
-
-        stage('Start Firefox Selenium (VNC Enabled)') {
+        stage('Start Firefox Selenium (noVNC Safe Mode)') {
             steps {
                 sh """
                     docker rm -f selenium-firefox firefox-video || true
 
                     docker run -d --name selenium-firefox \
                       -p 4445:4444 \
+                      -p 7901:7900 \
                       -p 5901:5900 \
+                      -e SE_SCREEN_WIDTH=1280 \
+                      -e SE_SCREEN_HEIGHT=720 \
+                      -e SE_NODE_MAX_SESSIONS=1 \
                       selenium/standalone-firefox:latest
                 """
-                sh "sleep 5"
+                sh "sleep 10"
             }
         }
 
