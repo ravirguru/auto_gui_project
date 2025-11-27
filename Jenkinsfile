@@ -122,6 +122,7 @@ pipeline {
                         -w /project \
                         python:3.10 \
                         bash -c "pip install -r requirements.txt && pytest -v --browser firefox --junitxml=reports/junit-firefox.xml || true"
+                    """
             }
         }
 
