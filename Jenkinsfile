@@ -48,8 +48,7 @@ pipeline {
                     docker run -d --name chrome-video \
                       --link selenium-chrome \
                       -v ${WORKSPACE}/videos:/videos \
-                      selenium/video:ffmpeg \
-                      /videos/chrome_test.mp4
+                      selenium/video
                 """
             }
         }
@@ -105,8 +104,7 @@ pipeline {
                     docker run -d --name firefox-video \
                       --link selenium-firefox \
                       -v ${WORKSPACE}/videos:/videos \
-                      selenium/video:ffmpeg \
-                      /videos/firefox_test.mp4
+                      selenium/video
                 """
             }
         }
