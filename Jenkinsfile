@@ -153,7 +153,9 @@ pipeline {
     post {
         always {
             junit 'reports/*.xml'
-            archiveArtifacts artifacts: 'videos/*.mp4', fingerprint: true
+            //archiveArtifacts artifacts: 'videos/*.mp4', fingerprint: true
+            archiveArtifacts artifacts: 'videos/*.mp4', allowEmptyArchive: true, fingerprint: true
+
         }
         cleanup {
             cleanWs()
