@@ -15,7 +15,7 @@ def test_validate_testdata(resource):
     assert resource["data"] == 123
 
 #parameterizing data here.
-@pytest.mark.parametrize("username", "password",
+@pytest.mark.parametrize("username,password",
                          [("admin", "admin123"),
                              ("user1", "pass1"),
                              ("test", "test123")
