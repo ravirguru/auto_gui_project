@@ -118,7 +118,7 @@ pipeline {
                     docker run --rm \
                         -e RUN_ENV=jenkins \
                         -e GRID_URL=http://host.docker.internal:4445/wd/hub \
-                        -v ${WORKSPACE}:/project \
+                        -v /c/jenkins_home/workspace/python-selenium-pipeline:/project \
                         -w /project \
                         python:3.10 \
                         bash -c "pip install -r requirements.txt && pytest -v --browser firefox --junitxml=reports/junit-firefox.xml || true"
