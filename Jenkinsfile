@@ -26,21 +26,27 @@ pipeline {
             }
         }
 
-        /* ===================== CHROME WITH VNC + VIDEO ===================== */
+       /* ===================== START SELENIUM (SAFE noVNC MODE) ===================== */
 
-        stage('Start Chrome Selenium (VNC Enabled)') {
+        stage('Start Chrome Selenium (noVNC Safe Mode)') {
             steps {
                 sh """
                     docker rm -f selenium-chrome chrome-video || true
 
                     docker run -d --name selenium-chrome \
                       -p 4444:4444 \
+                      -p 7900:7900 \
                       -p 5900:5900 \
+                      -e SE_SCREEN_WIDTH=1280 \
+                      -e SE_SCREEN_HEIGHT=720 \
+                      -e SE_NODE_MAX_SESSIONS=1 \
                       selenium/standalone-chrome:latest
                 """
-                sh "sleep 5"
+                sh "sleep 10"
             }
         }
+
+        /* ===================== START VIDEO RECORDING ===================== */
 
         stage('Start Chrome Video Recording') {
             steps {
