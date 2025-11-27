@@ -54,3 +54,7 @@ def pytest_addoption(parser):
          default = "chrome",
          help ="Type of browser: chrome or firefox"
     )
+@pytest.fixture(scope='class')
+def resource():
+    print(f"Setting up resources for class")
+    return {"data" : 123}
