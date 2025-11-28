@@ -4,7 +4,9 @@ pipeline {
     environment {
         RUN_ENV = "jenkins"
         CI = "true"
-        GRID_URL = "http://selenium-hub:4444/wd/hub"
+        //GRID_URL = http://selenium-hub:4444/wd/hub" works for shared Docker network.
+        GRID_URL = "http://host.docker.internal:4444/wd/hub"
+
     }
 
     stages {
