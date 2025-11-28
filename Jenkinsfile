@@ -4,17 +4,13 @@ pipeline {
     environment {
         RUN_ENV = "jenkins"
         CI = "true"
-        //GRID_URL = http://selenium-hub:4444/wd/hub" works for shared Docker network.
         GRID_URL = "http://host.docker.internal:4444/wd/hub"
-
     }
 
     stages {
 
         stage('Clean Workspace') {
-            steps {
-                deleteDir()
-            }
+            steps { deleteDir() }
         }
 
         stage('Checkout') {
@@ -40,52 +36,55 @@ pipeline {
 
                 echo "Starting Selenium Hub..."
                 docker run -d --name selenium-hub \
-                -p 4444:4444 \
-                -p 4442:4442 \
-                -p 4443:4443 \
-                selenium/hub:latest
+                  -p 4444:4444 \
+                  -p 4442:4442 \
+                  -p 4443:4443 \
+                  selenium/hub:latest
 
-                sleep 10
+                sleep 12
 
                 echo "Starting 4 Chrome Nodes..."
                 for i in 1 2 3 4; do
-                docker run -d --name chrome-node-\$i \
-                  --link selenium-hub:hub \
-                  -e SE_EVENT_BUS_HOST=selenium-hub \
-                  -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
-                  -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
-                  -e SE_NODE_MAX_SESSIONS=1 \
-                  -p \$((7900 + i)):7900 \
-                  selenium/node-chrome:latest
+                  docker run -d --name chrome-node-\$i \
+                    --link selenium-hub:hub \
+                    -e SE_EVENT_BUS_HOST=selenium-hub \
+                    -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
+                    -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
+                    -e SE_NODE_MAX_SESSIONS=1 \
+                    -p \$((7900 + i)):7900 \
+                    selenium/node-chrome:latest
                 done
 
                 echo "Starting 2 Firefox Nodes..."
                 for i in 1 2; do
-                docker run -d --name firefox-node-\$i \
-                  --link selenium-hub:hub \
-                  -e SE_EVENT_BUS_HOST=selenium-hub \
-                  -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
-                  -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
-                  -e SE_NODE_MAX_SESSIONS=1 \
-                  -p \$((7910 + i)):7900 \
-                  selenium/node-firefox:latest
+                  docker run -d --name firefox-node-\$i \
+                    --link selenium-hub:hub \
+                    -e SE_EVENT_BUS_HOST=selenium-hub \
+                    -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
+                    -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
+                    -e SE_NODE_MAX_SESSIONS=1 \
+                    -p \$((7910 + i)):7900 \
+                    selenium/node-firefox:latest
                 done
                 """
             }
         }
 
-        /* ===================== START VIDEO RECORDING ===================== */
+        /* ===================== START VIDEO RECORDING (SAFE FIXED) ===================== */
 
         stage('Start Chrome + Firefox Video Recording') {
             steps {
                 sh """
+                docker rm -f chrome-video || true
+                docker rm -f firefox-video || true
+
                 docker run -d --name chrome-video \
-                  --link chrome-node-1 \
+                  --link selenium-hub \
                   -v ${WORKSPACE}/videos:/videos \
                   selenium/video
 
                 docker run -d --name firefox-video \
-                  --link firefox-node-1 \
+                  --link selenium-hub \
                   -v ${WORKSPACE}/videos:/videos \
                   selenium/video
                 """
@@ -138,7 +137,9 @@ pipeline {
         stage('Stop Selenium Grid') {
             steps {
                 sh """
-                docker rm -f selenium-hub chrome-node-1 chrome-node-2 firefox-node-1 firefox-node-2 || true
+                docker rm -f selenium-hub || true
+                docker rm -f chrome-node-1 chrome-node-2 chrome-node-3 chrome-node-4 || true
+                docker rm -f firefox-node-1 firefox-node-2 || true
                 """
             }
         }
