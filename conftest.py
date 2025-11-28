@@ -6,7 +6,7 @@ from pages.base_page import BasePage
 from utilities.webdriver_factory import WebDriverFactory
 
 #@fixture(params=["chrome","firefox"])
-@fixture()   #Removing pytest_addoption() and use: Then just pytest -vs runs twice — once per browser automatically.
+@fixture(scope="function")   #Removing pytest_addoption() and use: Then just pytest -vs runs twice — once per browser automatically.
 def setup_teardown(request):
     #browser  = request.param.lower().strip()
     browser = request.config.getoption("--browser").lower().strip()

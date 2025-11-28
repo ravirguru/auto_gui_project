@@ -107,10 +107,10 @@ pipeline {
                   bash -c "
                     pip install -r requirements.txt && \
                     mkdir -p reports/chrome && \
-                    pytest -v -n auto --browser chrome \
-                          --junitxml=reports/chrome/results.xml \
-                          --html=reports/chrome/chrome_report.html \
-                          --self-contained-html
+                    pytest -v -n auto --dist=loadfile --browser chrome\
+                    --junitxml=reports/chrome/results.xml \
+                    --html=reports/chrome/chrome_report.html \
+                    --self-contained-html
                   "
                 """
             }
@@ -130,7 +130,7 @@ pipeline {
                   python:3.10 \
                   bash -c "pip install -r requirements.txt && \
                   mkdir -p reports/firefox && \
-                  pytest -v -n auto --browser firefox \
+                  pytest -v -n auto --dist=loadfile --browser firefox\
                   --junitxml=reports/firefox/results.xml \
                   --html=reports/firefox/firefox_report.html \
                   --self-contained-html
