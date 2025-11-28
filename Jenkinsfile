@@ -34,50 +34,42 @@ pipeline {
         stage('Start Selenium Hub & Nodes (Parallel Grid + noVNC)') {
             steps {
                 sh """
-                docker rm -f selenium-hub chrome-node-1 chrome-node-2 firefox-node-1 firefox-node-2 chrome-video firefox-video || true
+                docker rm -f selenium-hub || true
+                docker rm -f chrome-node-1 chrome-node-2 chrome-node-3 chrome-node-4 || true
+                docker rm -f firefox-node-1 firefox-node-2 || true
 
-                # HUB
+                echo "Starting Selenium Hub..."
                 docker run -d --name selenium-hub \
-                  -p 4444:4444 \
-                  selenium/hub:latest
-
-                sleep 5
-
-                # CHROME NODES (2)
-                docker run -d --name chrome-node-1 \
-                  -p 7090:7900 \
-                  -p 5900:5900 \
-                  -e SE_EVENT_BUS_HOST=selenium-hub \
-                  -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
-                  -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
-                  selenium/node-chrome:latest
-
-                docker run -d --name chrome-node-2 \
-                  -p 7091:7900 \
-                  -p 5901:5900 \
-                  -e SE_EVENT_BUS_HOST=selenium-hub \
-                  -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
-                  -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
-                  selenium/node-chrome:latest
-
-                # FIREFOX NODES (2)
-                docker run -d --name firefox-node-1 \
-                  -p 7092:7900 \
-                  -p 5902:5900 \
-                  -e SE_EVENT_BUS_HOST=selenium-hub \
-                  -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
-                  -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
-                  selenium/node-firefox:latest
-
-                docker run -d --name firefox-node-2 \
-                  -p 7093:7900 \
-                  -p 5903:5900 \
-                  -e SE_EVENT_BUS_HOST=selenium-hub \
-                  -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
-                  -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
-                  selenium/node-firefox:latest
+                -p 4444:4444 \
+                -p 4442:4442 \
+                -p 4443:4443 \
+                selenium/hub:latest
 
                 sleep 10
+
+                echo "Starting 4 Chrome Nodes..."
+                for i in 1 2 3 4; do
+                docker run -d --name chrome-node-\$i \
+                  --link selenium-hub:hub \
+                  -e SE_EVENT_BUS_HOST=selenium-hub \
+                  -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
+                  -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
+                  -e SE_NODE_MAX_SESSIONS=1 \
+                  -p \$((7900 + i)):7900 \
+                  selenium/node-chrome:latest
+                done
+
+                echo "Starting 2 Firefox Nodes..."
+                for i in 1 2; do
+                docker run -d --name firefox-node-\$i \
+                  --link selenium-hub:hub \
+                  -e SE_EVENT_BUS_HOST=selenium-hub \
+                  -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
+                  -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
+                  -e SE_NODE_MAX_SESSIONS=1 \
+                  -p \$((7910 + i)):7900 \
+                  selenium/node-firefox:latest
+                done
                 """
             }
         }
