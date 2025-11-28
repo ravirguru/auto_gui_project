@@ -4,7 +4,8 @@ pipeline {
     environment {
         RUN_ENV = "jenkins"
         CI = "true"
-        GRID_URL = "http://host.docker.internal:4444/wd/hub"
+        // GRID_URL = "http://host.docker.internal:4444/wd/hub"
+        GRID_URL = "http://172.17.0.1:4444/wd/hub"
     }
 
     stages {
