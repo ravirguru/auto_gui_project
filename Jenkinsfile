@@ -102,7 +102,8 @@ pipeline {
                   -v /c/jenkins_home/workspace/python-selenium-pipeline:/project \
                   -w /project \
                   python:3.10 \
-                  bash -c "pip install -r requirements.txt && pytest -v -n auto --browser chrome --junitxml=reports/junit-chrome.xml"
+                  bash -c "pip install -r requirements.txt && pytest -v -n auto --browser chrome \
+                  --html=reports/chrome_report.html --self-contained-html"
                 """
             }
         }
@@ -116,7 +117,9 @@ pipeline {
                   -v /c/jenkins_home/workspace/python-selenium-pipeline:/project \
                   -w /project \
                   python:3.10 \
-                  bash -c "pip install -r requirements.txt && pytest -v -n auto --browser firefox --junitxml=reports/junit-firefox.xml"
+                  bash -c "pip install -r requirements.txt && pytest -v -n auto --browser firefox \
+                  --html=reports/firefox_report.html --self-contained-html
+"
                 """
             }
         }
@@ -153,8 +156,16 @@ pipeline {
 
     post {
         always {
-            junit 'reports/*.xml'
-            archiveArtifacts artifacts: 'videos/*.mp4', allowEmptyArchive: true, fingerprint: true
+        // JUnit results
+        junit 'reports/chrome/*.xml'
+        junit 'reports/firefox/*.xml'
+
+        // Archive HTML reports
+        archiveArtifacts artifacts: 'reports/chrome/*.html', fingerprint: true
+        archiveArtifacts artifacts: 'reports/firefox/*.html', fingerprint: true
+
+        // Archive videos if any
+        archiveArtifacts artifacts: 'videos/*.mp4', allowEmptyArchive: true, fingerprint: true
         }
         cleanup {
             cleanWs()
