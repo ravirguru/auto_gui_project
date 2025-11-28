@@ -97,28 +97,43 @@ pipeline {
             steps {
                 sh """
                 docker run --rm \
+                  --dns 8.8.8.8 \
+                  --dns 1.1.1.1 \
                   -e RUN_ENV=jenkins \
                   -e GRID_URL=${GRID_URL} \
                   -v /c/jenkins_home/workspace/python-selenium-pipeline:/project \
                   -w /project \
                   python:3.10 \
-                  bash -c "pip install -r requirements.txt && pytest -v -n auto --browser chrome \
-                  --html=reports/chrome_report.html --self-contained-html"
+                  bash -c "
+                    pip install -r requirements.txt && \
+                    mkdir -p reports/chrome && \
+                    pytest -v -n auto --browser chrome \
+                          --junitxml=reports/chrome/results.xml \
+                          --html=reports/chrome/chrome_report.html \
+                          --self-contained-html
+                  "
                 """
             }
         }
+
 
         stage('Run Tests - Firefox (Parallel)') {
             steps {
                 sh """
                 docker run --rm \
+                 --dns 8.8.8.8 \
+                 --dns 1.1.1.1 \
                   -e RUN_ENV=jenkins \
                   -e GRID_URL=${GRID_URL} \
                   -v /c/jenkins_home/workspace/python-selenium-pipeline:/project \
                   -w /project \
                   python:3.10 \
-                  bash -c "pip install -r requirements.txt && pytest -v -n auto --browser firefox \
-                  --html=reports/firefox_report.html --self-contained-html
+                  bash -c "pip install -r requirements.txt && \
+                  mkdir -p reports/firefox && \
+                  pytest -v -n auto --browser firefox \
+                  --junitxml=reports/firefox/results.xml \
+                  --html=reports/firefox/firefox_report.html \
+                  --self-contained-html
 "
                 """
             }
