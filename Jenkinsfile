@@ -4,6 +4,7 @@ pipeline {
     environment {
         RUN_ENV = "jenkins"
         CI = "true"
+        GRID_URL = "http://selenium-hub:4444/wd/hub"
     }
 
     stages {
@@ -26,130 +27,127 @@ pipeline {
             }
         }
 
-       /* ===================== START SELENIUM (SAFE noVNC MODE) ===================== */
+        /* ===================== START SELENIUM GRID ===================== */
 
-        stage('Start Chrome Selenium (noVNC Safe Mode)') {
+        stage('Start Selenium Hub & Nodes (Parallel Grid + noVNC)') {
             steps {
                 sh """
-                    docker rm -f selenium-chrome chrome-video || true
+                docker rm -f selenium-hub chrome-node-1 chrome-node-2 firefox-node-1 firefox-node-2 chrome-video firefox-video || true
 
-                    docker run -d --name selenium-chrome \
-                      -p 4444:4444 \
-                      -p 7900:7900 \
-                      -p 5900:5900 \
-                      -e SE_SCREEN_WIDTH=1280 \
-                      -e SE_SCREEN_HEIGHT=720 \
-                      -e SE_NODE_MAX_SESSIONS=1 \
-                      selenium/standalone-chrome:latest
+                # HUB
+                docker run -d --name selenium-hub \
+                  -p 4444:4444 \
+                  selenium/hub:latest
+
+                sleep 5
+
+                # CHROME NODES (2)
+                docker run -d --name chrome-node-1 \
+                  -p 7090:7900 \
+                  -p 5900:5900 \
+                  -e SE_EVENT_BUS_HOST=selenium-hub \
+                  -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
+                  -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
+                  selenium/node-chrome:latest
+
+                docker run -d --name chrome-node-2 \
+                  -p 7091:7900 \
+                  -p 5901:5900 \
+                  -e SE_EVENT_BUS_HOST=selenium-hub \
+                  -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
+                  -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
+                  selenium/node-chrome:latest
+
+                # FIREFOX NODES (2)
+                docker run -d --name firefox-node-1 \
+                  -p 7092:7900 \
+                  -p 5902:5900 \
+                  -e SE_EVENT_BUS_HOST=selenium-hub \
+                  -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
+                  -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
+                  selenium/node-firefox:latest
+
+                docker run -d --name firefox-node-2 \
+                  -p 7093:7900 \
+                  -p 5903:5900 \
+                  -e SE_EVENT_BUS_HOST=selenium-hub \
+                  -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
+                  -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
+                  selenium/node-firefox:latest
+
+                sleep 10
                 """
-                sh "sleep 10"
             }
         }
 
         /* ===================== START VIDEO RECORDING ===================== */
 
-        stage('Start Chrome Video Recording') {
+        stage('Start Chrome + Firefox Video Recording') {
             steps {
                 sh """
-                    docker run -d --name chrome-video \
-                      --link selenium-chrome \
-                      -v ${WORKSPACE}/videos:/videos \
-                      selenium/video
+                docker run -d --name chrome-video \
+                  --link chrome-node-1 \
+                  -v ${WORKSPACE}/videos:/videos \
+                  selenium/video
+
+                docker run -d --name firefox-video \
+                  --link firefox-node-1 \
+                  -v ${WORKSPACE}/videos:/videos \
+                  selenium/video
                 """
             }
         }
 
-        stage('Run Tests - Chrome') {
+        /* ===================== RUN TESTS (PARALLEL) ===================== */
+
+        stage('Run Tests - Chrome (Parallel)') {
             steps {
                 sh """
-                    docker run --rm \
-                      -e RUN_ENV=jenkins \
-                      -e GRID_URL=http://host.docker.internal:4444/wd/hub \
-                      -v /c/jenkins_home/workspace/python-selenium-pipeline:/project \
-                      -w /project \
-                      python:3.10 \
-                      bash -c "ls -la && pip install -r requirements.txt && pytest -v --browser chrome --junitxml=reports/junit-chrome.xml"
+                docker run --rm \
+                  -e RUN_ENV=jenkins \
+                  -e GRID_URL=${GRID_URL} \
+                  -v /c/jenkins_home/workspace/python-selenium-pipeline:/project \
+                  -w /project \
+                  python:3.10 \
+                  bash -c "pip install -r requirements.txt && pytest -v -n auto --browser chrome --junitxml=reports/junit-chrome.xml"
                 """
             }
         }
 
-        stage('Stop Chrome Video') {
+        stage('Run Tests - Firefox (Parallel)') {
             steps {
                 sh """
-                    docker stop chrome-video || true
-                    docker rm chrome-video || true
+                docker run --rm \
+                  -e RUN_ENV=jenkins \
+                  -e GRID_URL=${GRID_URL} \
+                  -v /c/jenkins_home/workspace/python-selenium-pipeline:/project \
+                  -w /project \
+                  python:3.10 \
+                  bash -c "pip install -r requirements.txt && pytest -v -n auto --browser firefox --junitxml=reports/junit-firefox.xml"
                 """
             }
         }
 
-        stage('Stop Chrome Selenium') {
-            steps {
-                sh "docker rm -f selenium-chrome || true"
-            }
-        }
+        /* ===================== STOP VIDEOS ===================== */
 
-        stage('Start Firefox Selenium (noVNC Safe Mode)') {
+        stage('Stop Videos') {
             steps {
                 sh """
-                    docker rm -f selenium-firefox firefox-video || true
-
-                    docker run -d --name selenium-firefox \
-                      -p 4445:4444 \
-                      -p 7901:7900 \
-                      -p 5901:5900 \
-                      -e SE_SCREEN_WIDTH=1280 \
-                      -e SE_SCREEN_HEIGHT=720 \
-                      -e SE_NODE_MAX_SESSIONS=1 \
-                      selenium/standalone-firefox:latest
-                """
-                sh "sleep 10"
-            }
-        }
-
-        stage('Start Firefox Video Recording') {
-            steps {
-                sh """
-                    docker run -d --name firefox-video \
-                      --link selenium-firefox \
-                      -v ${WORKSPACE}/videos:/videos \
-                      selenium/video
+                docker stop chrome-video firefox-video || true
+                docker rm chrome-video firefox-video || true
                 """
             }
         }
 
-        stage('Run Tests - Firefox') {
+        /* ===================== STOP GRID ===================== */
+
+        stage('Stop Selenium Grid') {
             steps {
                 sh """
-                   echo WORKSPACE = ${WORKSPACE}
-                    ls -R ${WORKSPACE}
-
-                    docker run --rm \
-                        -e RUN_ENV=jenkins \
-                        -e GRID_URL=http://host.docker.internal:4445/wd/hub \
-                        -v /c/jenkins_home/workspace/python-selenium-pipeline:/project \
-                        -w /project \
-                        python:3.10 \
-                        bash -c "pip install -r requirements.txt && pytest -v --browser firefox --junitxml=reports/junit-firefox.xml || true"
-                    """
-            }
-        }
-
-        stage('Stop Firefox Video') {
-            steps {
-                sh """
-                    docker stop firefox-video || true
-                    docker rm firefox-video || true
+                docker rm -f selenium-hub chrome-node-1 chrome-node-2 firefox-node-1 firefox-node-2 || true
                 """
             }
         }
-
-        stage('Stop Firefox Selenium') {
-            steps {
-                sh "docker rm -f selenium-firefox || true"
-            }
-        }
-
-        /* ===================== REPORTS ===================== */
 
         stage('List Videos') {
             steps {
@@ -161,9 +159,7 @@ pipeline {
     post {
         always {
             junit 'reports/*.xml'
-            //archiveArtifacts artifacts: 'videos/*.mp4', fingerprint: true
             archiveArtifacts artifacts: 'videos/*.mp4', allowEmptyArchive: true, fingerprint: true
-
         }
         cleanup {
             cleanWs()
